@@ -1,0 +1,28 @@
+{
+  "tasks": {
+    "dev": "deno run --watch --allow-read --allow-net --allow-env --env-file=.env.dev src/main.ts"
+  },
+  "imports": {
+    "tencentcloud-sdk-nodejs-dnspod": "npm:tencentcloud-sdk-nodejs-dnspod@4.0.982"
+  },
+  "lint": {
+    "include": [
+      "src/"
+    ],
+    "rules": {
+      "tags": [
+        "recommended"
+      ]
+    }
+  },
+  "fmt": {
+    "useTabs": false,
+    "indentWidth": 2,
+    "semiColons": false,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "include": [
+      "src/"
+    ]
+  }
+}
