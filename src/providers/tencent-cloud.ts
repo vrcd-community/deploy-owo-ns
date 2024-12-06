@@ -57,19 +57,19 @@ export default class TencentCloudDnsProvider implements DnsProvider {
     const limit = 3000
     let records: DnsRecordDto[] = []
 
-    const initalResponse = await this.client.DescribeRecordList({
+    const initialResponse = await this.client.DescribeRecordList({
       Domain: domain,
       Limit: limit,
       Offset: 0,
     })
 
     records = records.concat(
-      initalResponse.RecordList?.map((record) => this.toDnsRecord(record)) ||
+      initialResponse.RecordList?.map((record) => this.toDnsRecord(record)) ||
         [],
     )
 
     const pageToFetch = Math.ceil(
-      (initalResponse.RecordCountInfo?.TotalCount ?? 0) / limit,
+      (initialResponse.RecordCountInfo?.TotalCount ?? 0) / limit,
     )
 
     for (let index = 1; index < pageToFetch; index++) {
