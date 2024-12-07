@@ -7,3 +7,14 @@ export interface DnsProvider {
   removeRecords: (domain: string, recordIds: string[]) => Promise<void>
   getRecords: (domain: string) => Promise<DnsRecordDto[]>
 }
+
+export interface DnsProviderConstructor {
+  new (env: Record<string, string>): DnsProvider
+}
+
+export function createDnsProvider(
+  constructor: DnsProviderConstructor,
+  env: Record<string, string>,
+): DnsProvider {
+  return new constructor(env)
+}

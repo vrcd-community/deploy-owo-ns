@@ -1,4 +1,7 @@
 import { CdnIpItem, CdnIpResult } from './types/cdn-ip-result.ts'
+import { DeployConfigSchema } from './types/config.ts'
+import { createDnsProvider } from './types/dns-provider.ts'
+import { DnsRecord } from './types/dns-record.ts'
 
 console.log(
   String.raw`
@@ -13,9 +16,91 @@ console.log(
 console.log('Learn More: https://cf.owonet.work')
 console.log('Github: https://github.com/vrcd-community/deploy-owo-ns\n')
 
+const config = await DeployConfigSchema.parseAsync(
+  JSON.parse(await Deno.readTextFile('config.json')),
+)
+
 const cdnInfo = await fetchCdnInfo()
 
 printCdnInfo(cdnInfo)
+
+const denoEnv = Deno.env.toObject()
+for (const [domain, { provider, names, env }] of Object.entries(config)) {
+  console.log(`# Deploying NS-OwO for ${domain} (${provider})`)
+  console.log(`SubDomain to deploy:`)
+  names.forEach((name) => {
+    console.log(`\t- ${name}.${domain}`)
+  })
+
+  const { default: dnsProviderType } = await import(
+    `./providers/${provider}.ts`
+  )
+
+  const dnsProvider = createDnsProvider(dnsProviderType, { ...denoEnv, ...env })
+
+  console.log('Checking existing records...')
+  const currentRecords = await dnsProvider.getRecords(domain)
+
+  const recordsToRemove = currentRecords.filter((record) =>
+    names.includes(record.name) &&
+    (record.type === 'A' || record.type === 'AAAA')
+  )
+
+  if (recordsToRemove.length > 0) {
+    console.log(
+      'A/AAAA Records to remove:\n',
+      recordsToRemove.map((record) =>
+        `\t- ${record.id} - ${record.name}.${domain} ${record.line} ${record.type} ${record.value}`
+      ).join('\n'),
+    )
+
+    console.log('Removing existing records...')
+    await dnsProvider.removeRecords(
+      domain,
+      recordsToRemove.map((record) => record.id),
+    )
+  } else {
+    console.log('No A/AAAA records to remove')
+  }
+
+  console.log('Adding new records...')
+
+  const recordToAdd: DnsRecord[] = []
+  names.forEach((name) => {
+    cdnInfo.forEach((item) => {
+      item.v4.forEach((ip) => {
+        recordToAdd.push({
+          name,
+          type: 'A',
+          value: ip.ip,
+          line: item.isp,
+        })
+      })
+
+      item.v6.forEach((ip) => {
+        recordToAdd.push({
+          name,
+          type: 'AAAA',
+          value: ip.ip,
+          line: item.isp,
+        })
+      })
+    })
+  })
+
+  console.log(
+    'A/AAAA Records to add:\n',
+    recordToAdd.map((record) =>
+      `\t- ${record.name}.${domain} ${record.line} ${record.type} ${record.value}`
+    ).join('\n'),
+  )
+
+  await dnsProvider.addRecords(domain, recordToAdd)
+
+  console.log('Deployed NS-OwO for', domain)
+}
+
+console.log('All domains deployed!')
 
 function printCdnInfo(cdnInfo: CdnIpResult[]) {
   cdnInfo.forEach((item) => {

@@ -14,11 +14,11 @@ export default class TencentCloudDnsProvider implements DnsProvider {
 
   private readonly client
 
-  constructor() {
+  constructor(env: Record<string, string>) {
     this.client = new dnspod.v20210323.Client({
       credential: {
-        secretId: Deno.env.get('TENCENT_CLOUD_SECRET_ID') ?? '',
-        secretKey: Deno.env.get('TENCENT_CLOUD_SECRET_KEY') ?? '',
+        secretId: env['TENCENT_CLOUD_SECRET_ID'] ?? '',
+        secretKey: env['TENCENT_CLOUD_SECRET_KEY'] ?? '',
       },
     })
   }
