@@ -12,7 +12,8 @@
       "runtimeArgs": [
         "run",
         "--inspect-wait",
-        "--allow-all"
+        "--allow-all",
+        "--env-file=.env.dev"
       ],
       "attachSimplePort": 9229
     }
