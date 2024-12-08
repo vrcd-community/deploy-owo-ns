@@ -1,5 +1,5 @@
 import { DnsProvider } from '../types/dns-provider.ts'
-import { DnsRecord, DnsRecordDto } from '../types/dns-record.ts'
+import { DnsRecord, DnsRecordDto, DnsRecordType } from '../types/dns-record.ts'
 
 import { dnspod } from 'tencentcloud-sdk-nodejs-dnspod'
 
@@ -85,7 +85,12 @@ export default class TencentCloudDnsProvider implements DnsProvider {
     await this.waitTaskComplete(removeBatchTaskResponse.JobId)
   }
 
-  async getRecords(domain: string): Promise<DnsRecordDto[]> {
+  async getRecords(
+    domain: string,
+    type?: DnsRecordType,
+    line?: string,
+    name?: string,
+  ): Promise<DnsRecordDto[]> {
     const limit = 3000
     let records: DnsRecordDto[] = []
 
@@ -93,6 +98,9 @@ export default class TencentCloudDnsProvider implements DnsProvider {
       Domain: domain,
       Limit: limit,
       Offset: 0,
+      RecordLine: line,
+      RecordType: type,
+      Subdomain: name,
     })
 
     records = records.concat(

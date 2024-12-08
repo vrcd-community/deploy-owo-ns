@@ -41,12 +41,21 @@ for (
   const dnsProvider = createDnsProvider(dnsProviderType, { ...denoEnv, ...env })
 
   console.log('Checking existing records...')
-  const currentRecords = await dnsProvider.getRecords(domain)
 
-  const recordsToRemove = currentRecords.filter((record) =>
-    names.includes(record.name) &&
-    (record.type === 'A' || record.type === 'AAAA')
+  const currentTypeARecords = await dnsProvider.getRecords(
+    domain,
+    'A',
+    undefined,
+    name,
   )
+  const currentTypeAAAARecords = await dnsProvider.getRecords(
+    domain,
+    'AAAA',
+    undefined,
+    name,
+  )
+
+  const recordsToRemove = currentTypeARecords.concat(currentTypeAAAARecords)
 
   if (recordsToRemove.length > 0) {
     console.log(
