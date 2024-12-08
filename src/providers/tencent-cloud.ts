@@ -14,6 +14,12 @@ export default class TencentCloudDnsProvider implements DnsProvider {
 
   private readonly client
 
+  private readonly ispMap: Record<string, string> = {
+    '中国电信': '电信',
+    '中国联通': '联通',
+    '中国移动': '移动',
+  }
+
   constructor(env: Record<string, string>) {
     this.client = new dnspod.v20210323.Client({
       credential: {
@@ -34,23 +40,49 @@ export default class TencentCloudDnsProvider implements DnsProvider {
       throw new Error('DomainId not found')
     }
 
-    await this.client.CreateRecordBatch({
+    const recordsToAdd = records.map((record) => ({
+      SubDomain: record.name,
+      RecordType: record.type,
+      Value: record.value,
+      RecordLine: this.ispMap[record.line] ?? record.line,
+      TTL: record.ttl,
+      Weight: record.weight,
+    } as AddRecordBatch))
+
+    const createBatchTaskResponse = await this.client.CreateRecordBatch({
       DomainIdList: [domainId.toString()],
-      RecordList: records.map((record) => ({
-        SubDomain: record.name,
-        RecordType: record.type,
-        Value: record.value,
-        RecordLine: record.line,
-        TTL: record.ttl,
-        Weight: record.weight,
-      } as AddRecordBatch)),
+      RecordList: recordsToAdd,
     })
+
+    console.log(
+      'Add records batch task created, JobId:',
+      createBatchTaskResponse.JobId,
+    )
+
+    if (createBatchTaskResponse.JobId === undefined) {
+      throw new Error('JobId not found')
+    }
+
+    console.log('Waiting for task to complete...')
+    await this.waitTaskComplete(createBatchTaskResponse.JobId)
   }
 
   async removeRecords(_domain: string, recordIds: string[]): Promise<void> {
-    await this.client.DeleteRecordBatch({
+    const removeBatchTaskResponse = await this.client.DeleteRecordBatch({
       RecordIdList: recordIds.map((id) => parseInt(id)),
     })
+
+    console.log(
+      'Remove records batch task created, JobId:',
+      removeBatchTaskResponse.JobId,
+    )
+
+    if (removeBatchTaskResponse.JobId === undefined) {
+      throw new Error('JobId not found')
+    }
+
+    console.log('Waiting for task to complete...')
+    await this.waitTaskComplete(removeBatchTaskResponse.JobId)
   }
 
   async getRecords(domain: string): Promise<DnsRecordDto[]> {
@@ -96,6 +128,35 @@ export default class TencentCloudDnsProvider implements DnsProvider {
       line: record.Line,
       ttl: record.TTL,
       weight: record.Weight,
+    }
+  }
+
+  private async waitTaskComplete(jobId: number): Promise<void> {
+    let taskCompleted = false
+    while (!taskCompleted) {
+      const task = await this.client.DescribeBatchTask({
+        JobId: jobId,
+      })
+
+      if (
+        task.SuccessCount === undefined || task.FailCount === undefined ||
+        task.TotalCount === undefined
+      ) {
+        throw new Error('Task info response invalid')
+      }
+
+      if ((task.SuccessCount + task.FailCount) === task.TotalCount) {
+        taskCompleted = true
+
+        if (task.FailCount > 0) {
+          throw new Error(
+            'Task failed, see DnsPod Console for more information',
+          )
+        }
+      }
+
+      // wait 5s
+      await new Promise((resolve) => setTimeout(resolve, 5000))
     }
   }
 }

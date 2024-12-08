@@ -1,7 +1,7 @@
 import { CdnIpItem, CdnIpResult } from './types/cdn-ip-result.ts'
 import { DeployConfigSchema } from './types/config.ts'
 import { createDnsProvider } from './types/dns-provider.ts'
-import { DnsRecord } from './types/dns-record.ts'
+import { DnsRecord, DnsRecordType } from './types/dns-record.ts'
 
 console.log(
   String.raw`
@@ -25,7 +25,9 @@ const cdnInfo = await fetchCdnInfo()
 printCdnInfo(cdnInfo)
 
 const denoEnv = Deno.env.toObject()
-for (const [domain, { provider, names, env }] of Object.entries(config)) {
+for (
+  const [domain, { provider, names, env, maxRecords }] of Object.entries(config)
+) {
   console.log(`# Deploying NS-OwO for ${domain} (${provider})`)
   console.log(`SubDomain to deploy:`)
   names.forEach((name) => {
@@ -68,23 +70,8 @@ for (const [domain, { provider, names, env }] of Object.entries(config)) {
   const recordToAdd: DnsRecord[] = []
   names.forEach((name) => {
     cdnInfo.forEach((item) => {
-      item.v4.forEach((ip) => {
-        recordToAdd.push({
-          name,
-          type: 'A',
-          value: ip.ip,
-          line: item.isp,
-        })
-      })
-
-      item.v6.forEach((ip) => {
-        recordToAdd.push({
-          name,
-          type: 'AAAA',
-          value: ip.ip,
-          line: item.isp,
-        })
-      })
+      pushRecords(item.v4, name, 'A', item.isp, recordToAdd, maxRecords)
+      pushRecords(item.v6, name, 'AAAA', item.isp, recordToAdd, maxRecords)
     })
   })
 
@@ -101,6 +88,28 @@ for (const [domain, { provider, names, env }] of Object.entries(config)) {
 }
 
 console.log('All domains deployed!')
+
+function pushRecords(
+  items: CdnIpItem[],
+  name: string,
+  type: DnsRecordType,
+  line: string,
+  recordToAdd: DnsRecord[],
+  maxRecords?: number,
+) {
+  items.forEach((ip, index) => {
+    if (maxRecords && index >= maxRecords) {
+      return
+    }
+
+    recordToAdd.push({
+      name,
+      type,
+      value: ip.ip,
+      line: line,
+    })
+  })
+}
 
 function printCdnInfo(cdnInfo: CdnIpResult[]) {
   cdnInfo.forEach((item) => {
