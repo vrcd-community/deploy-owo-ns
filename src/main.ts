@@ -26,7 +26,9 @@ printCdnInfo(cdnInfo)
 
 const denoEnv = Deno.env.toObject()
 for (
-  const [domain, { provider, names, env, maxRecords }] of Object.entries(config)
+  const [domain, { provider, names, env, maxRecords, ttl }] of Object.entries(
+    config,
+  )
 ) {
   console.log(`# Deploying NS-OwO for ${domain} (${provider})`)
   console.log(`SubDomain to deploy:`)
@@ -84,8 +86,8 @@ for (
   const recordToAdd: DnsRecord[] = []
   names.forEach((name) => {
     cdnInfo.forEach((item) => {
-      pushRecords(item.v4, name, 'A', item.isp, recordToAdd, maxRecords)
-      pushRecords(item.v6, name, 'AAAA', item.isp, recordToAdd, maxRecords)
+      pushRecords(item.v4, name, 'A', item.isp, ttl, recordToAdd, maxRecords)
+      pushRecords(item.v6, name, 'AAAA', item.isp, ttl, recordToAdd, maxRecords)
     })
   })
 
@@ -108,6 +110,7 @@ function pushRecords(
   name: string,
   type: DnsRecordType,
   line: string,
+  ttl: number,
   recordToAdd: DnsRecord[],
   maxRecords?: number,
 ) {
@@ -119,6 +122,7 @@ function pushRecords(
     recordToAdd.push({
       name,
       type,
+      ttl,
       value: ip.ip,
       line: line,
     })
