@@ -1,13 +1,12 @@
 {
   "misakal.xyz": {
-    "provider": "tencent-cloud",
+    "provider": "huawei-cloud",
     "env": {
       "VUE_APP_BASE_API": "https://api.vrcd.org.cn"
     },
     "names": [
-      "test1",
-      "test2",
-      "test3"
-    ]
+      "test1"
+    ],
+    "maxRecords": 2
   }
 }
