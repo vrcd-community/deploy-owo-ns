@@ -1,7 +1,7 @@
 import { CdnIpItem, CdnIpResult } from './types/cdn-ip-result.ts'
 import { DeployConfigSchema } from './types/config.ts'
 import { createDnsProvider } from './types/dns-provider.ts'
-import { DnsRecord, DnsRecordType } from './types/dns-record.ts'
+import { DnsRecord, DnsRecordDto, DnsRecordType } from './types/dns-record.ts'
 
 console.log(
   String.raw`
@@ -42,20 +42,25 @@ for (
 
   console.log('Checking existing records...')
 
-  const currentTypeARecords = await dnsProvider.getRecords(
-    domain,
-    'A',
-    undefined,
-    name,
-  )
-  const currentTypeAAAARecords = await dnsProvider.getRecords(
-    domain,
-    'AAAA',
-    undefined,
-    name,
-  )
+  const recordsToRemove: DnsRecordDto[] = []
 
-  const recordsToRemove = currentTypeARecords.concat(currentTypeAAAARecords)
+  for (const name of names) {
+    const currentTypeARecords = await dnsProvider.getRecords(
+      domain,
+      'A',
+      undefined,
+      name,
+    )
+
+    const currentTypeAAAARecords = await dnsProvider.getRecords(
+      domain,
+      'AAAA',
+      undefined,
+      name,
+    )
+
+    recordsToRemove.push(...currentTypeARecords, ...currentTypeAAAARecords)
+  }
 
   if (recordsToRemove.length > 0) {
     console.log(
