@@ -1,9 +1,11 @@
 {
   "tasks": {
-    "dev": "deno run --watch --allow-read --allow-net --allow-env --env-file=.env.dev src/main.ts"
+    "dev": "deno run --unsafely-ignore-certificate-errors --watch --allow-read --allow-net --allow-env --env-file=.env.dev src/main.ts"
   },
   "imports": {
     "tencentcloud-sdk-nodejs-dnspod": "npm:tencentcloud-sdk-nodejs-dnspod@4.0.982",
+    "@huaweicloud/huaweicloud-sdk-dns": "npm:@huaweicloud/huaweicloud-sdk-dns@^3.1.128",
+    "@huaweicloud/huaweicloud-sdk-core": "npm:@huaweicloud/huaweicloud-sdk-core@^3.1.128",
     "zod": "https://deno.land/x/zod@v3.23.8/mod.ts"
   },
   "lint": {
