@@ -33,6 +33,8 @@ deno run --allow-net --allow-env main.ts
 
 ## 配置
 
+首先配置该环境变量：`CDN_INFO_URL`，脚本会从这个 URL 获取 CDN IP 信息。
+
 在项目根目录下创建一个 `config.json` 文件，格式如下：
 
 ```json
@@ -67,7 +69,7 @@ deno run --allow-net --allow-env main.ts
 - `names`: 需要创建 DNS 记录的子域名列表。
 - `maxRecords`: 每个子域名最多创建的记录数。
 - `ttl`: DNS 记录的 TTL（生存时间）。
-- `env`: 包含服务商所需的环境变量。
+- `env`: 包含服务商所需的环境变量。**脚本会从当前环境变量继承。**
 
 ### DNS 提供商设置
 
