@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "dev": "deno run --unsafely-ignore-certificate-errors --watch --allow-read --allow-net --allow-env --env-file=.env.dev src/main.ts"
+    "dev": "deno run --inspect --allow-read --allow-net --allow-env --env-file=.env.dev src/main.ts"
   },
   "imports": {
     "tencentcloud-sdk-nodejs-dnspod": "npm:tencentcloud-sdk-nodejs-dnspod@4.0.982",
