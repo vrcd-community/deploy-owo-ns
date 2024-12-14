@@ -23,6 +23,7 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
     '中国电信': 'Dianxin',
     '中国联通': 'Liantong',
     '中国移动': 'Yidong',
+    '中国教育和科研计算机网': 'Jiaoyuwang',
   }
 
   constructor(env: Record<string, string>) {

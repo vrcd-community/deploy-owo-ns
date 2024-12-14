@@ -18,6 +18,7 @@ export default class TencentCloudDnsProvider implements DnsProvider {
     '中国电信': '电信',
     '中国联通': '联通',
     '中国移动': '移动',
+    '中国教育和科研计算机网': '教育网',
   }
 
   constructor(env: Record<string, string>) {
