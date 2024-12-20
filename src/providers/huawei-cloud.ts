@@ -90,6 +90,7 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
     // )
 
     for (const recordId of recordIds) {
+      console.log('Deleting record:', recordId)
       await this.client.deleteRecordSets(
         new DeleteRecordSetsRequest()
           .withZoneId(zoneId)
