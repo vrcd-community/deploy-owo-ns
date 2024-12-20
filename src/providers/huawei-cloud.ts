@@ -1,3 +1,4 @@
+import { DomainDeploySchema } from '../types/config.ts'
 import { DnsProvider } from '../types/dns-provider.ts'
 import { DnsRecord, DnsRecordDto, DnsRecordType } from '../types/dns-record.ts'
 
@@ -24,9 +25,10 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
     '中国联通': 'Liantong',
     '中国移动': 'Yidong',
     '中国教育和科研计算机网': 'Jiaoyuwang',
+    '鹏博士': '鹏博士',
   }
 
-  constructor(env: Record<string, string>) {
+  constructor(env: Record<string, string>, config: DomainDeploySchema) {
     const credentials = new BasicCredentials()
       .withAk(env.HUAWEICLOUD_SDK_AK)
       .withSk(env.HUAWEICLOUD_SDK_SK)
@@ -35,6 +37,8 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
       .withCredential(credentials)
       .withEndpoint(env.HUAWEICLOUD_SDK_ENDPOINT)
       .build()
+
+    this.ispMap = Object.assign(this.ispMap, config.ispMap)
   }
 
   async addRecords(domain: string, records: DnsRecord[]): Promise<void> {

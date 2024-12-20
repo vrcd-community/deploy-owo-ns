@@ -16,6 +16,15 @@ console.log(
 console.log('Learn More: https://cf.owonet.work')
 console.log('Github: https://github.com/vrcd-community/deploy-owo-ns\n')
 
+const supportIsp = [
+  '中国电信',
+  '中国联通',
+  '中国移动',
+  '中国教育和科研计算机网',
+  '鹏博士',
+  '中国科技网',
+]
+
 const config = await DeployConfigSchema.parseAsync(
   JSON.parse(await Deno.readTextFile('config.json')),
 )
@@ -47,19 +56,28 @@ for (
   const recordsToRemove: DnsRecordDto[] = []
 
   for (const name of names) {
-    const currentTypeARecords = await dnsProvider.getRecords(
+    let currentTypeARecords = await dnsProvider.getRecords(
       domain,
       'A',
       undefined,
       name,
     )
 
-    const currentTypeAAAARecords = await dnsProvider.getRecords(
+    let currentTypeAAAARecords = await dnsProvider.getRecords(
       domain,
       'AAAA',
       undefined,
       name,
     )
+
+    if (!config.removeUnknownLineRecord) {
+      currentTypeAAAARecords = currentTypeAAAARecords.filter((record) =>
+        supportIsp.includes(record.line)
+      )
+      currentTypeARecords = currentTypeARecords.filter((record) =>
+        supportIsp.includes(record.line)
+      )
+    }
 
     recordsToRemove.push(...currentTypeARecords, ...currentTypeAAAARecords)
   }

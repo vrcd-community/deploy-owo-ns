@@ -1,3 +1,4 @@
+import { type DomainDeploySchema } from '../types/config.ts'
 import { DnsProvider } from '../types/dns-provider.ts'
 import { DnsRecord, DnsRecordDto, DnsRecordType } from '../types/dns-record.ts'
 
@@ -19,15 +20,18 @@ export default class TencentCloudDnsProvider implements DnsProvider {
     '中国联通': '联通',
     '中国移动': '移动',
     '中国教育和科研计算机网': '教育网',
+    '中国科技网': '科技网',
   }
 
-  constructor(env: Record<string, string>) {
+  constructor(env: Record<string, string>, config: DomainDeploySchema) {
     this.client = new dnspod.v20210323.Client({
       credential: {
         secretId: env['TENCENT_CLOUD_SECRET_ID'] ?? '',
         secretKey: env['TENCENT_CLOUD_SECRET_KEY'] ?? '',
       },
     })
+
+    this.ispMap = Object.assign(this.ispMap, config.ispMap)
   }
 
   async addRecords(domain: string, records: DnsRecord[]): Promise<void> {
