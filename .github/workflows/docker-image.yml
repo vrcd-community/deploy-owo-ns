@@ -26,7 +26,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            misakalinzi/misaka-bili-api
+            misakalinzi/deply-owo-ns
           tags: |
             type=sha
 
