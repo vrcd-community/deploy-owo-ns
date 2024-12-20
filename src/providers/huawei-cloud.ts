@@ -40,7 +40,7 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
   async addRecords(domain: string, records: DnsRecord[]): Promise<void> {
     const zoneId = await this.getZoneId(domain)
 
-    const recordGroup = records.reduce((acc, record) => {
+    const recordGroupWithSameNameType = records.reduce((acc, record) => {
       const key = `${record.name}-${record.type}`
       acc[key] = acc[key] ?? []
       acc[key].push(record)
@@ -49,18 +49,34 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
 
     const recordSets: CreateRSetBatchLinesReq[] = []
 
-    for (const key in recordGroup) {
-      const records = recordGroup[key]
+    for (const key in recordGroupWithSameNameType) {
+      const records = recordGroupWithSameNameType[key]
+
+      const recordGroupWithSameLineTtl = records.reduce((acc, record) => {
+        const key = `${record.line}-${record.ttl}`
+        acc[key] = acc[key] ?? []
+        acc[key].push(record)
+        return acc
+      }, {} as Record<string, DnsRecord[]>)
+
+      const lines: BatchCreateRecordSetWithLine[] = []
+
+      for (const recordKey of Object.keys(recordGroupWithSameLineTtl)) {
+        const initialRecord = recordGroupWithSameLineTtl[recordKey][0]
+        const records = recordGroupWithSameLineTtl[recordKey]
+
+        lines.push(
+          new BatchCreateRecordSetWithLine()
+            .withLine(this.ispMap[initialRecord.line] ?? initialRecord.line)
+            .withTtl(initialRecord.ttl ?? 300)
+            .withRecords(records.map((record) => record.value)),
+        )
+      }
 
       const recordSet = new CreateRSetBatchLinesReq()
         .withName(records[0].name + '.' + domain + '.')
         .withType(records[0].type)
-        .withLines(records.map((record) => {
-          return new BatchCreateRecordSetWithLine()
-            .withLine(this.ispMap[record.line] ?? record.line)
-            .withTtl(record.ttl ?? 300)
-            .withRecords([record.value])
-        }))
+        .withLines(lines)
 
       recordSets.push(recordSet)
     }
