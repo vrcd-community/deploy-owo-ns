@@ -1,3 +1,4 @@
+import { DomainDeploySchema } from './config.ts'
 import { DnsRecord, DnsRecordDto, DnsRecordType } from './dns-record.ts'
 
 export interface DnsProvider {
@@ -20,6 +21,7 @@ export interface DnsProviderConstructor {
 export function createDnsProvider(
   constructor: DnsProviderConstructor,
   env: Record<string, string>,
+  config: DomainDeploySchema,
 ): DnsProvider {
   return new constructor(env)
 }

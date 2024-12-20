@@ -49,7 +49,11 @@ for (
     `./providers/${provider}.ts`
   )
 
-  const dnsProvider = createDnsProvider(dnsProviderType, { ...denoEnv, ...env })
+  const dnsProvider = createDnsProvider(
+    dnsProviderType,
+    { ...denoEnv, ...env },
+    config[domain],
+  )
 
   console.log('Checking existing records...')
 
