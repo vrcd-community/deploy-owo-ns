@@ -73,7 +73,7 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
         )
       }
 
-      const recordName = records[0].name === domain
+      const recordName = records[0].name === '@'
         ? domain
         : records[0].name + '.' + domain + '.'
       const recordSet = new CreateRSetBatchLinesReq()
