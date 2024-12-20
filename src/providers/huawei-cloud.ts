@@ -129,9 +129,10 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
     const showRequest = new ShowRecordSetByZoneRequest()
       .withZoneId(zoneId)
       .withLimit(500)
+      .withSearchMode('equal')
 
     showRequest.type = type
-    showRequest.name = name
+    showRequest.name = name === '@' ? domain + '.' : name
     showRequest.lineId = line
 
     let records: ShowRecordSetByZoneResp[] = []
