@@ -73,8 +73,11 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
         )
       }
 
+      const recordName = records[0].name === domain
+        ? domain
+        : records[0].name + '.' + domain + '.'
       const recordSet = new CreateRSetBatchLinesReq()
-        .withName(records[0].name + '.' + domain + '.')
+        .withName(recordName)
         .withType(records[0].type)
         .withLines(lines)
 
@@ -156,9 +159,13 @@ export default class HuaweiCloudDnsProvider implements DnsProvider {
   ): DnsRecordDto {
     const line = this.ispMap[record.line!] ?? record.line!
 
+    const recordName = record.name === `${domain}.`
+      ? '@'
+      : record.name!.replace(`.${domain}.`, '')
+
     return {
       id: record.id!,
-      name: record.name!.replace(`.${domain}.`, ''),
+      name: recordName,
       type: record.type!,
       ttl: record.ttl!,
       line: line,
