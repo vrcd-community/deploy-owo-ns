@@ -15,7 +15,7 @@ export interface DnsProvider {
 }
 
 export interface DnsProviderConstructor {
-  new (env: Record<string, string>): DnsProvider
+  new (env: Record<string, string>, config: DomainDeploySchema): DnsProvider
 }
 
 export function createDnsProvider(
@@ -23,5 +23,5 @@ export function createDnsProvider(
   env: Record<string, string>,
   config: DomainDeploySchema,
 ): DnsProvider {
-  return new constructor(env)
+  return new constructor(env, config)
 }
